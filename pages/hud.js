@@ -1,4 +1,5 @@
 let findMode = null;
+let commandMode = null;
 
 // Chrome creates a unique port for each MessageChannel, so there's a race condition between
 // JavaScript messages of Vimium and browser messages during style recomputation. This duration was
@@ -35,43 +36,42 @@ const onKeyEvent = function (event) {
     return null;
   }
 
-  const inputElement = document.getElementById("hud-find-input");
-  if (inputElement == null) { // Don't do anything if we're not in find mode.
-    return;
-  }
-
-  if (
-    (KeyboardUtils.isBackspace(event) && (inputElement.textContent.length === 0)) ||
-    (event.key === "Enter") || KeyboardUtils.isEscape(event)
-  ) {
-    inputElement.blur();
-    UIComponentServer.postMessage({
-      name: "hideFindMode",
-      exitEventIsEnter: event.key === "Enter",
-      exitEventIsEscape: KeyboardUtils.isEscape(event),
-    });
-  } else if (event.key === "ArrowUp") {
-    if (rawQuery = FindModeHistory.getQuery(findMode.historyIndex + 1)) {
-      findMode.historyIndex += 1;
-      if (findMode.historyIndex === 0) {
-        findMode.partialQuery = findMode.rawQuery;
-      }
-      setTextInInputElement(inputElement, rawQuery);
-      findMode.executeQuery();
+  const doFor = (elem, name, history, mode) => {
+    if (!elem) return;
+    if (KeyboardUtils.isBackspace(event) && !elem.textContent.length || event.key === 'Enter' || KeyboardUtils.isEscape(event)) {
+      elem.blur();
+      UIComponentServer.postMessage({
+        name,
+        exitEventIsEnter: event.key === 'Enter',
+        exitEventIsEscape: KeyboardUtils.isEscape(event)
+      });
     }
-  } else if (event.key === "ArrowDown") {
-    findMode.historyIndex = Math.max(-1, findMode.historyIndex - 1);
-    rawQuery = 0 <= findMode.historyIndex
-      ? FindModeHistory.getQuery(findMode.historyIndex)
-      : findMode.partialQuery;
-    setTextInInputElement(inputElement, rawQuery);
-    findMode.executeQuery();
-  } else {
+    else if (event.key === "ArrowUp") {
+      if (rawQuery = history.getQuery(mode.historyIndex + 1)) {
+        mode.historyIndex += 1;
+        if (mode.historyIndex === 0) {
+          mode.partialQuery = mode.rawQuery;
+        }
+        setTextInInputElement(elem, rawQuery);
+        mode.executeQuery();
+      }
+    } else if (event.key === "ArrowDown") {
+      mode.historyIndex = Math.max(-1, mode.historyIndex - 1);
+      rawQuery = 0 <= mode.historyIndex
+        ? history.getQuery(mode.historyIndex)
+        : mode.partialQuery;
+      setTextInInputElement(elem, rawQuery);
+      mode.executeQuery();
+    } else {
     return;
+    }
+
+    DomUtils.suppressEvent(event);
+    return false;
   }
 
-  DomUtils.suppressEvent(event);
-  return false;
+  return doFor(document.getElementById('hud-find-input'), 'hideFindMode', FindModeHistory, findMode) ??
+    doFor(document.getElementById('hud-command-input'), 'hideCommandMode', CommandModeHistory, commandMode);
 };
 
 document.addEventListener("keydown", onKeyEvent);
@@ -146,6 +146,43 @@ const handlers = {
     };
   },
 
+  showCommandMode(data) {
+    let executeQuery;
+    const hud = document.getElementById("hud");
+    hud.classList.add("hud-command");
+    const inputElement = document.createElement("span");
+    try {
+      inputElement.contentEditable = "plaintext-only";
+    } catch (error) { // Fallback to standard-compliant version.
+      inputElement.contentEditable = "true";
+    }
+    inputElement.id = "hud-command-input";
+    hud.appendChild(inputElement);
+
+    inputElement.addEventListener(
+      "input",
+      executeQuery = function (event) {
+        if (Utils.isFirefox() && event.isComposing) {
+          return;
+        }
+        // Replace \u00A0 (&nbsp;) with a normal space.
+        commandMode.rawQuery = inputElement.textContent.replace("\u00A0", " ");
+        UIComponentServer.postMessage({ name: "updateCommand", query: commandMode.rawQuery });
+      },
+    );
+    Utils.setTimeout(TIME_TO_WAIT_FOR_IPC_MESSAGES, function () {
+      if (Utils.isFirefox()) window.focus();
+      inputElement.focus();
+    });
+
+    commandMode = {
+      historyIndex: -1,
+      partialQuery: "",
+      rawQuery: "",
+      executeQuery,
+    };
+  },
+
   updateMatchesCount({ matchCount, showMatchText }) {
     const countElement = document.getElementById("hud-match-count");
     // Don't do anything if we're not in find mode.
@@ -204,3 +241,4 @@ UIComponentServer.registerHandler(async function ({ data }) {
 });
 
 FindModeHistory.init();
+CommandModeHistory.init();

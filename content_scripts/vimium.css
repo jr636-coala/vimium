@@ -306,64 +306,26 @@ a:link.vimiumHelDialogLink, a:visited.vimiumHelDialogLink,
 /* Vimium HUD CSS */
 
 div.vimiumHUD {
+  background: #000;
   display: block;
   position: fixed;
-  width: calc(100% - 20px);
-  bottom: 8px;
-  left: 8px;
-  background: #F1F1F1;
-  text-align: left;
-  border-radius: 4px;
-  box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.8);
-  border: 1px solid #aaa;
-  z-index: 2139999999;
+  bottom: 0; left: 0; margin: 0; padding: 0;
+  opacity: .9;
+  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+  color: white;
+  height: 2rem;
+  width: 100vw;
+  font-size: 1.25rem;
 }
 
 iframe.vimiumHUDFrame {
-  background-color: transparent;
-  padding: 0px;
-  overflow: hidden;
-  display: block;
-  position: fixed;
-  width: 20%;
-  min-width: 300px;
-  height: 58px;
-  bottom: -14px;
-  right: 20px;
-  margin: 0 0 0 -40%;
-  border: none;
-  z-index: 2139999998; /* Two less than the reference value. */
+  bottom: 2rem; left: 0; margin: 0; padding: 0;
+  height: 2rem; width: 100vw; border: none; position: fixed;
   opacity: 0;
+  z-index: 2139999998; /* Two less than the reference value. */
 }
 
-div.vimiumHUD .vimiumHUDSearchArea {
-  display: block;
-  padding: 3px;
-  background-color: #F1F1F1;
-  border-radius: 4px 4px 0 0;
-}
-
-div.vimiumHUD .vimiumHUDSearchAreaInner {
-  color: #777;
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  font-size: 14px;
-  height: 30px;
-  margin-bottom: 0;
-  padding: 2px 4px;
-  border-radius: 3px;
-  width: 100%;
-  outline: none;
-  box-sizing: border-box;
-  line-height: 20px;
-}
-
-div.vimiumHUD .hud-find {
-  background: #fff;
-  border: 1px solid #ccc;
-}
-
-div.vimiumHUD span#hud-find-input, div.vimiumHUD span#hud-match-count {
-  color: #000;
+div.vimiumHUD span#hud-find-input, div.vimiumHUD span#hud-match-count, div.vimiumHUD span#hud-command-input {
   display: inline;
   outline: none;
   white-space: nowrap;
@@ -372,6 +334,10 @@ div.vimiumHUD span#hud-find-input, div.vimiumHUD span#hud-match-count {
 
 div.vimiumHUD span#hud-find-input:before {
   content: "/";
+}
+
+div.vimiumHUD span#hud-command-input:before {
+  content: ":";
 }
 
 div.vimiumHUD span#hud-match-count {

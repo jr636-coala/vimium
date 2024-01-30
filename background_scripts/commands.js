@@ -331,6 +331,7 @@ const Commands = {
       "Vomnibar.activateEditUrlInNewTab",
     ],
     findCommands: ["enterFindMode", "performFind", "performBackwardsFind"],
+    commandCommands: ["enterCommandMode"],
     historyNavigation: ["goBack", "goForward"],
     tabManipulation: [
       "createTab",
@@ -421,6 +422,7 @@ const defaultKeyMappings = {
 
   // Using find
   "/": "enterFindMode",
+  ":": "enterCommandMode",
   "n": "performFind",
   "N": "performBackwardsFind",
 
@@ -509,6 +511,8 @@ const commandDescriptions = {
   enterFindMode: ["Enter find mode", { noRepeat: true }],
   performFind: ["Cycle forward to the next find match"],
   performBackwardsFind: ["Cycle backward to the previous find match"],
+
+  enterCommandMode: ["Enter command mode", { noRepeat: true }],
 
   goPrevious: ["Follow the link labeled previous or <", { noRepeat: true }],
   goNext: ["Follow the link labeled next or >", { noRepeat: true }],

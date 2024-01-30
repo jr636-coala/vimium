@@ -162,6 +162,7 @@ const installModes = function () {
   // Initialize components upon which normal mode depends.
   Scroller.init();
   FindModeHistory.init();
+  CommandModeHistory.init();
   new InsertMode({ permanent: true });
   if (isEnabledForUrl) {
     new GrabBackFocus();

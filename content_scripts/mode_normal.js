@@ -213,6 +213,9 @@ const NormalModeCommands = {
     }
   },
 
+  enterCommandMode() {
+    return new CommandMode();
+  },
   // Misc.
   mainFrame() {
     return focusThisFrame({ highlight: true, forceFocusThisFrame: true });

@@ -85,6 +85,15 @@ const HUD = {
     });
   },
 
+  showCommandMode(commandMode = null) {
+    this.commandMode = commandMode;
+    DomUtils.documentComplete(async () => {
+      await this.init();
+      this.hudUI.activate({ name: "showCommandMode" });
+      this.tween.fade(1.0, 150);
+    });
+  },
+
   search(data) {
     // NOTE(mrmr1993): On Firefox, window.find moves the window focus away from the HUD. We use
     // postFindFocus to put it back, so the user can continue typing.
@@ -96,6 +105,10 @@ const HUD = {
     const matchCount = FindMode.query.parsedQuery.length > 0 ? FindMode.query.matchCount : 0;
     const showMatchText = FindMode.query.rawQuery.length > 0;
     this.hudUI.postMessage({ name: "updateMatchesCount", matchCount, showMatchText });
+  },
+
+  updateCommand(data) {
+    CommandMode.query.rawQuery = data.query;
   },
 
   // Hide the HUD.
@@ -125,6 +138,7 @@ const HUD = {
     }
   },
 
+  
   // These parameters describe the reason find mode is exiting, and come from the HUD UI component.
   hideFindMode({ exitEventIsEnter, exitEventIsEscape }) {
     let postExit;
@@ -159,6 +173,24 @@ const HUD = {
     if (postExit) {
       postExit();
     }
+  },
+
+  hideCommandMode({ exitEventIsEnter, exitEventIsEscape }) {
+    let postExit;
+    window.focus();
+
+    const focusNode = DomUtils.getSelectionFocusElement();
+    document.activeElement?.blur();
+    focusNode?.focus?.();
+
+    if (exitEventIsEnter) {
+      CommandMode.handleEnter();
+    } else if (exitEventIsEscape) {
+      postExit = CommandMode.handleEscape;
+    }
+
+    this.commandMode.exit();
+    postExit?.();
   },
 
   // These commands manage copying and pasting from the clipboard in the HUD frame.
